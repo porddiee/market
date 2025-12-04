@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block content %}
+<button class="btn btn-outline-secondary btn-sm mb-3" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back</button>
+<h1 class="mb-4">Checkout</h1>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card p-4">
+      <form method="post">
+        {% csrf_token %}
+        <h5 class="mb-3"><i class="bi bi-geo-alt"></i> Delivery Address</h5>
+        <textarea name="address" class="form-control mb-3" rows="3" placeholder="Enter your delivery address..." required>{{ initial_address }}</textarea>
+        <input type="hidden" name="delivery_lat" id="delivery_lat" value="" />
+        <input type="hidden" name="delivery_lng" id="delivery_lng" value="" />
+        <div class="mb-3">
+          <button type="button" id="useLocation" class="btn btn-outline-secondary btn-sm"><i class="bi bi-geo-alt-fill"></i> Use my current location</button>
+          <small id="locStatus" class="text-muted ms-2">No location captured</small>
+        </div>
+
+        <h5 class="mb-3"><i class="bi bi-telephone"></i> Contact Number</h5>
+        <input type="text" name="phone" class="form-control mb-4" placeholder="Phone number" value="{{ initial_phone }}" required>
+
+        <h5 class="mb-3"><i class="bi bi-credit-card"></i> Payment Method</h5>
+        <div class="mb-4">
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
+            <label class="form-check-label" for="cod">
+              <strong>Cash on Delivery</strong>
+              <div class="text-muted small">Pay when your order arrives</div>
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="payment_method" id="stripe" value="stripe">
+            <label class="form-check-label" for="stripe">
+              <strong>Credit/Debit Card (Stripe)</strong>
+              <div class="text-muted small">Secure online payment</div>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-100 btn-lg"><i class="bi bi-check-circle"></i> Place Order</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card p-4" style="position: sticky; top: 100px;">
+      <h5 class="mb-3">Order Summary</h5>
+      <p class="text-muted small">Review your order before checkout</p>
+      <div class="mb-3">
+        {% for it in items %}
+          <div class="d-flex justify-content-between small mb-1">
+            <div>
+              {{ it.quantity }} × {{ it.product.name }}
+              {% if it.discount_pct and it.discount_pct > 0 %}
+                <span class="badge bg-success ms-2">{{ it.discount_pct|floatformat:2 }} off</span>
+              {% endif %}
+            </div>
+            <div>₱{{ it.total_price }}</div>
+          </div>
+        {% endfor %}
+      </div>
+      <hr>
+      <div class="d-flex justify-content-between mb-2">
+        <span>Subtotal</span>
+        <span id="subtotalDisplay" data-value="{{ subtotal }}">₱{{ subtotal }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-3">
+        <span>Delivery Fee</span>
+        <span id="deliveryFeeDisplay">—</span>
+      </div>
+      <hr>
+      <div class="d-flex justify-content-between mb-4">
+        <strong>Total</strong>
+        <strong id="totalDisplay" class="h5" style="color: var(--primary);">₱{{ subtotal }}</strong>
+      </div>
+      <a href="/cart/" class="btn btn-outline-secondary w-100"><i class="bi bi-cart"></i> Back to Cart</a>
+    </div>
+  </div>
+</div>
+<script>
+const useLocationBtn = document.getElementById('useLocation');
+useLocationBtn?.addEventListener('click', function(){
+  const status = document.getElementById('locStatus');
+  if (!navigator.geolocation){
+    status.innerText = 'Geolocation not supported';
+    return;
+  }
+  status.innerText = 'Requesting location...';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    document.getElementById('delivery_lat').value = lat;
+    document.getElementById('delivery_lng').value = lng;
+    status.innerText = 'Location captured';
+    // visually highlight the button to show success
+    useLocationBtn.classList.remove('btn-outline-secondary');
+    useLocationBtn.classList.add('btn-success', 'text-white');
+    // Optionally show a simple delivery fee estimate client-side using STORE coords and rates if available
+    try{
+      const storeLat = parseFloat('{{ STORE_LAT }}');
+      const storeLng = parseFloat('{{ STORE_LNG }}');
+      const base = parseFloat('{{ DELIVERY_BASE_FEE }}');
+      const perKm = parseFloat('{{ DELIVERY_PER_KM }}');
+      function haversine(aLat,aLng,bLat,bLng){
+        function toRad(x){return x*Math.PI/180;}
+        const R=6371;
+        const dLat=toRad(bLat-aLat); const dLng=toRad(bLng-aLng);
+        const aa=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toRad(aLat))*Math.cos(toRad(bLat))*Math.sin(dLng/2)*Math.sin(dLng/2);
+        const cc=2*Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa));
+        return R*cc;
+      }
+      const dist = haversine(storeLat,storeLng,parseFloat(lat),parseFloat(lng));
+      const fee = (base + perKm*dist).toFixed(2);
+      document.getElementById('deliveryFeeDisplay').innerText = '₱' + fee;
+      // update total display to include delivery fee
+      try{
+        const subtotal = parseFloat(document.getElementById('subtotalDisplay')?.dataset?.value || '0');
+        const total = (subtotal + parseFloat(fee)).toFixed(2);
+        document.getElementById('totalDisplay').innerText = '₱' + total;
+      }catch(e){}
+    }catch(e){ }
+  }, function(err){
+    status.innerText = 'Unable to retrieve location';
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block content %}
+<button class="btn btn-outline-secondary btn-sm mb-3" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back</button>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card p-4">
+      <h3 class="mb-1">Order {{ order.order_number }}</h3>
+      <p class="text-muted mb-4">Placed on {{ order.created_at|date:"M d, Y" }}</p>
+
+      <div class="mb-2">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="status-badge {% if order.status == 'pending' %}status-pending{% elif order.status == 'confirmed' %}status-confirmed{% elif order.status == 'shipped' %}status-shipped{% elif order.status == 'delivered' %}status-delivered{% elif order.status == 'cancelled' %}status-cancelled{% endif %}">
+            {% if order.status == 'pending' %}<i class="bi bi-clock-history"></i>{% elif order.status == 'confirmed' %}<i class="bi bi-check-circle"></i>{% elif order.status == 'shipped' %}<i class="bi bi-truck"></i>{% elif order.status == 'delivered' %}<i class="bi bi-box-seam"></i>{% elif order.status == 'cancelled' %}<i class="bi bi-x-circle"></i>{% endif %}
+            <span>{{ order.status }}</span>
+          </div>
+          <div class="text-muted small">Placed on {% timezone "Asia/Manila" %}{{ order.created_at|date:"M d, Y, g:i A" }}{% endtimezone %}</div>
+        </div>
+        <div class="mt-2 small text-muted"><i class="bi bi-telephone"></i> Contact: <strong>{{ order.buyer.phone_number|default:'No phone' }}</strong></div>
+      </div>
+
+      <h5 class="mt-4 mb-3">Items</h5>
+      <div class="table-responsive">
+        <table class="table">
+          <thead class="table-light">
+            <tr>
+              <th>Product</th>
+              <th style="width:100px">Qty</th>
+              <th style="width:110px">Price</th>
+              <th style="width:110px">Shipping</th>
+              <th style="width:110px">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in order.items.all %}
+              <tr>
+                <td>{{ it.product.name }}</td>
+                <td>{{ it.quantity }}</td>
+                <td>₱{{ it.price }}</td>
+                <td>₱{{ it.delivery_fee }}</td>
+                <td><strong>₱{{ it.total_with_fee }}</strong></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <h5 class="mt-4 mb-3">Delivery Address</h5>
+      <p class="bg-light p-3 rounded">{{ order.delivery_address }}</p>
+      <p class="small text-muted mt-2"><i class="bi bi-telephone"></i> <strong>{{ order.buyer.phone_number|default:'No phone' }}</strong></p>
+      {% if order.delivery_lat and order.delivery_lng %}
+        <p class="mt-2">
+          <a href="https://www.google.com/maps/search/?api=1&query={{ order.delivery_lat }},{{ order.delivery_lng }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-geo-alt"></i> View delivery location</a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card p-4">
+      <h5 class="mb-3">Order Total</h5>
+      <div class="d-flex justify-content-between mb-2">
+        <span>Subtotal</span>
+        <span>₱{{ subtotal }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-3">
+        <span>Delivery Fee</span>
+        <span>₱{{ fees_total }}</span>
+      </div>
+      <hr>
+      <div class="d-flex justify-content-between">
+        <strong>Total</strong>
+        <strong style="color: var(--primary); font-size: 20px;">₱{{ order.total }}</strong>
+      </div>
+
+      <hr class="my-4">
+
+      <h5 class="mb-3">Tracking</h5>
+      <div class="progress mb-3" style="height: 10px;">
+        {% if order.status == 'pending' %}
+          <div class="progress-bar pending" role="progressbar" style="width:25%;"></div>
+        {% elif order.status == 'confirmed' %}
+          <div class="progress-bar confirmed" role="progressbar" style="width:50%;"></div>
+        {% elif order.status == 'shipped' %}
+          <div class="progress-bar shipped" role="progressbar" style="width:75%;"></div>
+        {% elif order.status == 'delivered' %}
+          <div class="progress-bar delivered" role="progressbar" style="width:100%;"></div>
+        {% elif order.status == 'cancelled' %}
+          <div class="progress-bar cancelled" role="progressbar" style="width:100%; background: linear-gradient(90deg,#ef4444,#dc2626);"></div>
+        {% endif %}
+      </div>
+
+      <small class="text-muted">
+        {% if order.status == 'pending' %}
+          <i class="bi bi-clock-history"></i> Waiting for seller confirmation...
+        {% elif order.status == 'confirmed' %}
+          <i class="bi bi-check-circle"></i> Your order is confirmed and being prepared.
+        {% elif order.status == 'shipped' %}
+          <i class="bi bi-truck"></i> Your order is on its way!
+        {% elif order.status == 'delivered' %}
+          <i class="bi bi-check2-square"></i> Order delivered successfully
+        {% elif order.status == 'cancelled' %}
+          <i class="bi bi-x-circle"></i> This order was cancelled
+        {% endif %}
+      </small>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block content %}
+<h1>My Account</h1>
+<p class="text-muted">Overview of your orders and delivery status.</p>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card p-3 mb-3">
+      <h5>Pending Deliveries</h5>
+      {% if pending %}
+        {% for o in pending %}
+          <div class="border rounded p-2 mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold">Order {{ o.order_number }}</div>
+                <div class="small text-muted">Placed: {% timezone "Asia/Manila" %}{{ o.created_at|date:"M d, Y, g:i A" }}{% endtimezone %}</div>
+                <div class="mt-1"><span class="status-pill {% if o.status == 'pending' %}status-pending{% elif o.status == 'confirmed' %}status-confirmed{% elif o.status == 'shipped' %}status-shipped{% elif o.status == 'delivered' %}status-delivered{% elif o.status == 'cancelled' %}status-cancelled{% endif %}">{{ o.status }}</span></div>
+                <div class="mt-1 small text-muted"><i class="bi bi-telephone"></i> <strong>{{ user.phone_number|default:'No phone' }}</strong></div>
+              </div>
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'order_detail' o.pk %}">View</a>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No pending deliveries.</p>
+      {% endif %}
+    </div>
+
+    <div class="card p-3">
+      <h5>Order History</h5>
+      <ul class="list-group">
+        {% for o in orders %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold">{{ o.order_number }}</div>
+              <div class="small text-muted">{{ o.created_at|date:"M d, Y" }}</div>
+              <div class="mt-1"><span class="status-pill {% if o.status == 'pending' %}status-pending{% elif o.status == 'confirmed' %}status-confirmed{% elif o.status == 'shipped' %}status-shipped{% elif o.status == 'delivered' %}status-delivered{% elif o.status == 'cancelled' %}status-cancelled{% endif %}">{{ o.status }}</span></div>
+            </div>
+            <a href="{% url 'order_detail' o.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+          </li>
+        {% empty %}
+          <li class="list-group-item">No orders yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h5>Profile</h5>
+      <p><strong>{{ user.username }}</strong></p>
+      <p class="small text-muted">{{ user.email }}</p>
+      <a href="/accounts/password_change/" class="btn btn-sm btn-outline-secondary">Change password</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

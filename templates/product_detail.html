@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<button class="btn btn-outline-secondary btn-sm mb-3" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back</button>
+
+<div class="row g-5">
+  <div class="col-lg-6">
+    {% if object.images.first %}
+      <img src="{{ object.images.first.image.url }}" class="img-fluid rounded-3 shadow" style="object-fit:cover;height:300px;width:100%;">
+    {% else %}
+      <div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center shadow" style="height:300px;color:white;">
+        <i class="bi bi-image" style="font-size:40px;"></i>
+      </div>
+    {% endif %}
+  </div>
+  <div class="col-lg-6">
+    <h1 class="mb-2">{{ object.name }}</h1>
+    {% if object.seller %}
+      <p class="mb-1">Seller: <a href="{% url 'seller_store' object.seller.pk %}"><strong>{{ object.seller.get_full_name|default:object.seller.username }}</strong></a></p>
+      {% if object.seller.phone_number %}
+        <p class="small text-muted">Contact: <strong>{{ object.seller.phone_number }}</strong></p>
+      {% endif %}
+    {% else %}
+      <p class="mb-1">Seller: <strong>Marketplace</strong></p>
+    {% endif %}
+    <p class="text-muted mb-4">Category: {{ object.category }}</p>
+    <p class="text-secondary">{{ object.description }}</p>
+    
+    <div class="card p-4 mb-4 border-0 bg-light">
+      <div class="row">
+        <div class="col-md-6">
+          <p class="text-muted small">Price per {{ object.unit }}</p>
+          <p class="h3" style="color: var(--primary);">₱{{ object.price }}</p>
+        </div>
+        <div class="col-md-6">
+          <p class="text-muted small">Stock Available</p>
+          <p class="h3">{{ object.stock }}</p>
+        </div>
+      </div>
+    </div>
+
+    {% if not user.is_superuser and not user.is_seller %}
+    <form method="post" class="mb-4">
+      {% csrf_token %}
+      <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label">Quantity</label>
+          {{ form.quantity }}
+        </div>
+        <div class="col-md-6 d-flex gap-2">
+          {% if not user.is_superuser %}
+            <button type="submit" name="add_to_cart" class="btn btn-primary flex-fill" style="height: 40px; font-weight: 600;"><i class="bi bi-cart-plus"></i> Add to Cart</button>
+            {% if user.is_authenticated %}
+              <button type="submit" name="buy_now" value="1" class="btn btn-success flex-fill" style="height: 40px; font-weight: 600;"><i class="bi bi-bag-check"></i> Buy Now</button>
+            {% else %}
+              <a href="{% url 'accounts_login' %}?next={% url 'product_detail' object.pk %}" class="btn btn-outline-primary flex-fill">Log in to Buy</a>
+            {% endif %}
+          {% else %}
+            <div class="text-muted">Admin view - purchasing disabled.</div>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+    {% elif user.is_seller %}
+    <div class="text-muted">Sellers cannot purchase products.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-4">Admin Dashboard</h1>
+<p class="text-muted mb-4">Platform overview and key metrics</p>
+
+<!-- Stats Grid -->
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="card stat-card p-4">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-muted small mb-1">Total Sales</p>
+          <h3 class="mb-0" style="color: var(--success);">₱{{ total_sales|floatformat:0 }}</h3>
+        </div>
+        <i class="bi bi-cash-coin" style="font-size: 32px; color: var(--success); opacity: 0.3;"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card stat-card p-4 success">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-muted small mb-1">Total Orders</p>
+          <h3 class="mb-0">{{ total_orders }}</h3>
+        </div>
+        <i class="bi bi-bag-check" style="font-size: 32px; color: var(--success); opacity: 0.3;"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card stat-card p-4 warning">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-muted small mb-1">Pending Orders</p>
+          <h3 class="mb-0">{{ pending_orders }}</h3>
+        </div>
+        <i class="bi bi-clock-history" style="font-size: 32px; color: var(--warning); opacity: 0.3;"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card stat-card p-4 danger">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-muted small mb-1">Total Products</p>
+          <h3 class="mb-0">{{ total_products }}</h3>
+        </div>
+        <i class="bi bi-box" style="font-size: 32px; color: var(--danger); opacity: 0.3;"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- More Stats Row -->
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="card stat-card p-4" style="border-left-color: #8b5cf6;">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-muted small mb-1">Total Users</p>
+          <h3 class="mb-0">{{ total_users }}</h3>
+        </div>
+        <i class="bi bi-people" style="font-size: 32px; color: #8b5cf6; opacity: 0.3;"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Management Links -->
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h5 class="mb-3"><i class="bi bi-gear"></i> Management</h5>
+      <div class="list-group list-group-flush">
+        <a href="/admin/core/product/" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          <span>Manage Products</span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="/admin/core/order/" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          <span>Manage Orders</span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="/admin/core/user/" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          <span>Manage Users</span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="/admin/core/category/" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          <span>Manage Categories</span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h5 class="mb-3"><i class="bi bi-speedometer2"></i> Quick Links</h5>
+      <div class="list-group list-group-flush">
+        <a href="/" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          <span>View Store</span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Profile</h1>
+<p class="text-muted">Update your default delivery address and contact number.</p>
+<div class="card p-4">
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">Phone Number</label>
+      {{ form.phone_number }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Default Address</label>
+      {{ form.default_address }}
+    </div>
+    {% if user.is_seller %}
+      <div class="mb-3">
+        <label class="form-label">Shop Location</label>
+        <div class="card p-3 bg-light mb-2">
+          <div id="locDisplay" class="text-muted small mb-2">No location captured yet</div>
+          <button type="button" id="locateBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-geo-alt-fill"></i> Locate my location</button>
+        </div>
+        {{ form.seller_lat }}
+        {{ form.seller_lng }}
+        <div class="mb-2 text-muted small">Click the button to capture your shop coordinates for accurate delivery fee estimates.</div>
+      </div>
+      <script>
+        const locateBtn = document.getElementById('locateBtn');
+        const latInput = document.querySelector('[name="seller_lat"]');
+        const lngInput = document.querySelector('[name="seller_lng"]');
+        const locDisplay = document.getElementById('locDisplay');
+
+        locateBtn?.addEventListener('click', function(e){
+          e.preventDefault();
+          if (!navigator.geolocation){
+            locDisplay.innerText = 'Geolocation not supported on your browser';
+            return;
+          }
+          locDisplay.innerText = 'Requesting location...';
+          navigator.geolocation.getCurrentPosition(function(pos){
+            const lat = pos.coords.latitude.toFixed(6);
+            const lng = pos.coords.longitude.toFixed(6);
+            latInput.value = lat;
+            lngInput.value = lng;
+            locDisplay.innerText = '✓ Location captured: ' + lat + ', ' + lng;
+            locateBtn.classList.remove('btn-outline-primary');
+            locateBtn.classList.add('btn-success', 'text-white');
+          }, function(err){
+            locDisplay.innerText = 'Unable to get location: ' + err.message;
+          });
+        });
+      </script>
+    {% endif %}
+    <button class="btn btn-primary">Save Profile</button>
+  </form>
+</div>
+{% endblock %}
+ 
