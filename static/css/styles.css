@@ -1,0 +1,6 @@
+body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+.navbar-brand { font-weight: 700; }
+.card { border: 0; }
+.card:hover { transform: translateY(-4px); transition: .15s ease; }
+footer { position: relative; bottom: 0; width: 100%; }
+input[type=number] { max-width: 120px; }
